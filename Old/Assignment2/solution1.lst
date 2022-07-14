@@ -1,0 +1,170 @@
+SQL> SET ECHO ON
+SQL> SET FEEDBACK ON
+SQL> SET LINESIZE 300
+SQL> SET PAGESIZE 300
+SQL> -- Student Name: Lee Yu Xian
+SQL> -- Student Number: 7233164
+SQL> 
+SQL> -- Connect to system
+SQL> CONNECT SYSTEM/oracle
+Connected.
+SQL> 
+SQL> -- Creating a table to collect statistics
+SQL> CREATE TABLE OPSTAT_TABLE(
+  2  OWNER		VARCHAR2(30)	NOT NULL,
+  3  OBJECT_NAME	VARCHAR2(30)	NOT NULL,
+  4  STATISTIC_NAME	VARCHAR2(64)	NOT NULL,
+  5  VALUE		NUMBER		NOT NULL,
+  6  TS		TIMESTAMP	NOT NULL,
+  7    CONSTRAINT OPSTAT_TABLE_PKEY 
+  8  	PRIMARY KEY(TS,OWNER,OBJECT_NAME,STATISTIC_NAME) );
+
+Table created.
+
+SQL> 
+SQL> INSERT INTO OPSTAT_TABLE (
+  2  	SELECT	OWNER,
+  3   		OBJECT_NAME,
+  4   		STATISTIC_NAME,
+  5   		VALUE,
+  6  		SYSTIMESTAMP
+  7  	FROM  	V$SEGMENT_STATISTICS
+  8  	WHERE 	OWNER = 'TPCHR' AND
+  9  		STATISTIC_NAME IN ('logical reads',
+ 10  				   'physical reads') );
+
+2 rows created.
+
+SQL> COMMIT;
+
+Commit complete.
+
+SQL> 
+SQL> -- Connect to tpchr and run the task1.sql query
+SQL> conn tpchr/oracle
+Connected.
+SQL> SELECT COUNT(*)
+  2  FROM ( (SELECT *
+  3         FROM LINEITEM
+  4         WHERE L_SHIPDATE >= '01-JAN-1992' AND
+  5               L_SHIPDATE <= '31-AUG-1992'
+  6         INTERSECT
+  7         SELECT *
+  8         FROM LINEITEM
+  9         WHERE L_SHIPDATE >= '01-APR-1992' AND
+ 10               L_SHIPDATE <= '30-APR-1993')
+ 11         UNION
+ 12        (SELECT *
+ 13         FROM LINEITEM
+ 14         WHERE L_SHIPDATE >= '01-JAN-1993' AND
+ 15               L_SHIPDATE <= '31-AUG-1993'
+ 16         INTERSECT
+ 17         SELECT *
+ 18         FROM LINEITEM
+ 19         WHERE L_SHIPDATE >= '01-APR-1992' AND
+ 20               L_SHIPDATE <= '30-APR-1993') );
+
+  COUNT(*)
+----------
+    200962
+
+1 row selected. 
+
+SQL> 
+SQL> -- Check the statistics
+SQL> conn system/oracle
+Connected.
+SQL> select	v.owner,
+  2  	v.object_name,
+  3  	v.statistic_name,
+  4  	v.value - nvl(stattable.value,0),
+  5  	systimestamp
+  6  from 	V$SEGMENT_STATISTICS v
+  7  left outer join opstat_table stattable
+  8  	on	v.owner = stattable.owner
+  9  	and	v.object_name = stattable.object_name
+ 10  	and	v.statistic_name = stattable.statistic_name
+ 11  where 	v.owner = 'TPCHR'
+ 12  and	v.statistic_name in ('logical reads','physical reads')
+ 13  and	(v.value - nvl(stattable.value,0)) <> 0;
+
+OWNER      OBJECT_NAM STATISTIC_NAME                 V.VALUE-NVL(STATTABLE.VALUE,0) SYSTIMESTAMP                          
+---------- ---------- ------------------------------ ------------------------------ --------------------------------------
+TPCHR      LINEITEM   logical reads                                          129472 29-JUL-21 08.01.37.826898000 AM -04:00
+TPCHR      LINEITEM   physical reads                                         129376 29-JUL-21 08.01.37.826898000 AM -04:00
+
+2 rows selected. 
+
+SQL> 
+SQL> -- Clear the table
+SQL> TRUNCATE TABLE OPSTAT_TABLE;
+
+Table truncated.
+
+SQL> 
+SQL> -- Connect to tpchr and run the improved query
+SQL> INSERT INTO OPSTAT_TABLE (
+  2  	SELECT	OWNER,
+  3   		OBJECT_NAME,
+  4   		STATISTIC_NAME,
+  5   		VALUE,
+  6  		SYSTIMESTAMP
+  7  	FROM  	V$SEGMENT_STATISTICS
+  8  	WHERE 	OWNER = 'TPCHR' AND
+  9  		STATISTIC_NAME IN ('logical reads',
+ 10  				   'physical reads') );
+
+2 rows created.
+
+SQL> COMMIT;
+
+Commit complete.
+
+SQL> 
+SQL> -- Connect to tpchr and run the improved query
+SQL> conn tpchr/oracle
+Connected.
+SQL> select count(*)
+  2  from lineitem
+  3  where (l_shipdate >= '01-APR-1992' and l_shipdate <= '31-AUG-1992')
+  4  or (l_shipdate >= '01-JAN-1993' and l_shipdate <= '30-APR-1993');
+
+  COUNT(*)
+----------
+    200962
+
+1 row selected. 
+
+SQL> 
+SQL> -- Check the statistics
+SQL> conn system/oracle
+Connected.
+SQL> select	v.owner,
+  2  	v.object_name,
+  3  	v.statistic_name,
+  4  	v.value - nvl(stattable.value,0),
+  5  	systimestamp
+  6  from 	V$SEGMENT_STATISTICS v
+  7  left outer join opstat_table stattable
+  8  	on	v.owner = stattable.owner
+  9  	and	v.object_name = stattable.object_name
+ 10  	and	v.statistic_name = stattable.statistic_name
+ 11  where 	v.owner = 'TPCHR' 
+ 12  and	v.statistic_name in ('logical reads','physical reads')
+ 13  and	(v.value - nvl(stattable.value,0)) <> 0;
+
+OWNER      OBJECT_NAM STATISTIC_NAME                 V.VALUE-NVL(STATTABLE.VALUE,0) SYSTIMESTAMP                          
+---------- ---------- ------------------------------ ------------------------------ --------------------------------------
+TPCHR      LINEITEM   logical reads                                           32368 29-JUL-21 08.01.38.297785000 AM -04:00
+TPCHR      LINEITEM   physical reads                                          32344 29-JUL-21 08.01.38.297785000 AM -04:00
+
+2 rows selected. 
+
+SQL> 
+SQL> -- Drop the created table
+SQL> drop table opstat_table cascade constraints purge;
+
+Table dropped.
+
+SQL> 
+SQL> SPOOL OFF

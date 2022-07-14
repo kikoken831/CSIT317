@@ -1,0 +1,153 @@
+SQL> SET ECHO ON
+SQL> SET FEEDBACK ON
+SQL> SET LINESIZE 300
+SQL> SET PAGESIZE 300
+SQL> -- Student Name: Lee Yu Xian
+SQL> -- Student Number: 7233164
+SQL> 
+SQL> -- Connecting as system
+SQL> connect system/oracle
+Connected.
+SQL> 
+SQL> -- Listing dynamic performance view from V$INSTANCE
+SQL> select v$instance.instance_name,
+  2  v$instance.host_name,
+  3  v$instance.startup_time,
+  4  v$instance.database_status
+  5  from v$instance;
+
+INSTANCE_NAME    HOST_NAME                                                        STARTUP_T DATABASE_STATUS  
+---------------- ---------------------------------------------------------------- --------- -----------------
+db               localhost.localdomain                                            15-JUL-21 ACTIVE           
+
+1 row selected. 
+
+SQL> 
+SQL> -- Connecting as tpchr
+SQL> connect tpchr/oracle
+Connected.
+SQL> 
+SQL> -- Analyzing table
+SQL> analyze table lineitem compute statistics;
+
+Table analyzed.
+
+SQL> analyze table orders compute statistics;
+
+Table analyzed.
+
+SQL> analyze table customer compute statistics;
+
+Table analyzed.
+
+SQL> analyze table part compute statistics;
+
+Table analyzed.
+
+SQL> analyze table supplier compute statistics;
+
+Table analyzed.
+
+SQL> analyze table partsupp compute statistics;
+
+Table analyzed.
+
+SQL> analyze table nation compute statistics;
+
+Table analyzed.
+
+SQL> analyze table region compute statistics;
+
+Table analyzed.
+
+SQL> 
+SQL> -- Analyzing index
+SQL> analyze index lineitem_pkey compute statistics;
+
+Index analyzed.
+
+SQL> analyze index orders_pkey compute statistics;
+
+Index analyzed.
+
+SQL> analyze index customer_pkey compute statistics;
+
+Index analyzed.
+
+SQL> analyze index part_pekey compute statistics;
+
+Index analyzed.
+
+SQL> analyze index supplier_pkey compute statistics;
+
+Index analyzed.
+
+SQL> analyze index partsupp_pkey compute statistics;
+
+Index analyzed.
+
+SQL> analyze index nation_pkey compute statistics;
+
+Index analyzed.
+
+SQL> analyze index region_pkey compute statistics;
+
+Index analyzed.
+
+SQL> 
+SQL> -- Getting systimestamp
+SQL> select systimestamp from dual;
+
+SYSTIMESTAMP
+--------------------------------------
+16-JUL-21 11.50.16.411354000 PM -04:00
+
+1 row selected. 
+
+SQL> 
+SQL> -- Finding row, data blocks, extends and bytes of tables
+SQL> select us.segment_name, 
+  2  ut.num_rows, 
+  3  us.blocks,
+  4  us.extents,
+  5  us.bytes
+  6  from user_segments us join user_tables ut
+  7  on us.segment_name = ut.table_name
+  8  where ut.table_name in ('NATION', 'REGION', 'PART', 'SUPPLIER', 'PARTSUPP', 'CUSTOMER', 'ORDERS', 'LINEITEM');
+
+SEGMENT_NAME                                                                                                                       NUM_ROWS     BLOCKS    EXTENTS      BYTES
+-------------------------------------------------------------------------------------------------------------------------------- ---------- ---------- ---------- ----------
+CUSTOMER                                                                                                                              45000       1056         33    8650752
+LINEITEM                                                                                                                            1800093      32576       1018  266862592
+NATION                                                                                                                                   25         32          1     262144
+ORDERS                                                                                                                               450000       7296        228   59768832
+PART                                                                                                                                  60000       1088         34    8912896
+PARTSUPP                                                                                                                             240000       5024        157   41156608
+REGION                                                                                                                                    5         32          1     262144
+SUPPLIER                                                                                                                               3000         96          3     786432
+
+8 rows selected. 
+
+SQL> 
+SQL> -- Finding row, data blocks, extends and bytes of index
+SQL> select us.segment_name,
+  2  us.blocks,
+  3  us.extents,
+  4  us.bytes
+  5  from user_segments us
+  6  where us.segment_name in ('NATION_PKEY', 'REGION_PKEY', 'PART_PKEY', 'SUPPLIER_PKEY', 'PARTSUPP_PKEY', 'CUSTOMER_PKEY', 'ORDERS_PKEY', 'LINEITEM_PKEY');
+
+SEGMENT_NAME                                                                                                                         BLOCKS    EXTENTS      BYTES
+-------------------------------------------------------------------------------------------------------------------------------- ---------- ---------- ----------
+CUSTOMER_PKEY                                                                                                                           128          4    1048576
+LINEITEM_PKEY                                                                                                                          4256        133   34865152
+NATION_PKEY                                                                                                                              32          1     262144
+ORDERS_PKEY                                                                                                                             928         29    7602176
+PARTSUPP_PKEY                                                                                                                           896         28    7340032
+REGION_PKEY                                                                                                                              32          1     262144
+SUPPLIER_PKEY                                                                                                                            32          1     262144
+
+7 rows selected. 
+
+SQL> 
+SQL> spool off

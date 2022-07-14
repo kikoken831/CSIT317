@@ -1,0 +1,65 @@
+SQL> SET ECHO ON
+SQL> SET FEEDBACK ON
+SQL> SET LINESIZE 300
+SQL> SET PAGESIZE 300
+SQL> -- Student Name: Lee Yu Xian
+SQL> -- Student Number: 7233164
+SQL> 
+SQL> -- Connect as system
+SQL> conn system/oracle
+Connected.
+SQL> 
+SQL> -- Change directory
+SQL> cd ~/TPCHR
+SQL> 
+SQL> -- Process scripts
+SQL> @showstat.sql
+SQL> SET ECHO OFF
+Script name> task1.sql
+
+Owner                Object name          Statistic name            Statistic value
+-------------------- -------------------- ------------------------- ---------------
+TPCHR                PART                 logical reads                     178,912
+TPCHR                PARTSUPP_PKEY        logical reads                       2,656
+TPCHR                PART_PEKEY           logical reads                     710,992
+
+Statistic name                           Statistic value
+---------------------------------------- ---------------
+bytes sent via SQL*Net to client                  10,780
+bytes received via SQL*Net from client            11,766
+SQL> 
+SQL> prompt Done.
+Done.
+SQL> 
+SQL> -- Rollback to reverse the database modifications
+SQL> rollback;
+
+Rollback complete.
+
+SQL> 
+SQL> -- Process scripts again, with improved sql
+SQL> @showstat.sql
+SQL> SET ECHO OFF
+Script name> task1.1.sql
+
+Owner                Object name          Statistic name            Statistic value
+-------------------- -------------------- ------------------------- ---------------
+TPCHR                PART                 logical reads                         912
+TPCHR                PARTSUPP_PKEY        logical reads                         880
+TPCHR                PART_PEKEY           logical reads                     359,840
+
+Statistic name                           Statistic value
+---------------------------------------- ---------------
+bytes sent via SQL*Net to client                  10,778
+bytes received via SQL*Net from client            11,184
+SQL> 
+SQL> prompt Done.
+Done.
+SQL> 
+SQL> -- Rollback to reverse the database modifications
+SQL> rollback;
+
+Rollback complete.
+
+SQL> 
+SQL> SPOOL OFF

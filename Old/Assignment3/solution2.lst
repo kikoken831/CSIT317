@@ -1,0 +1,199 @@
+SQL> SET FEEDBACK ON
+SQL> SET LINESIZE 300
+SQL> SET PAGESIZE 300
+SQL> -- Student Name: Lee Yu Xian
+SQL> -- Student Number: 7233164
+SQL> 
+SQL> -- Creating indexes for 1st query
+SQL> create index index1 on orders(o_orderstatus, o_orderkey, o_custkey);
+
+Index created.
+
+SQL> create index index2 on lineitem(l_tax, l_orderkey, l_extendedprice);
+
+Index created.
+
+SQL> 
+SQL> -- Run the query and explain the plan
+SQL> EXPLAIN PLAN FOR
+  2  SELECT O_CUSTKEY, SUM(L_EXTENDEDPRICE)
+  3  FROM LINEITEM JOIN ORDERS
+  4                ON L_ORDERKEY = O_ORDERKEY
+  5  WHERE O_ORDERSTATUS = 'F' AND
+  6        L_TAX = 0.07
+  7  GROUP BY O_CUSTKEY;
+
+Explained.
+
+SQL> SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
+
+PLAN_TABLE_OUTPUT
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2825699427
+ 
+-------------------------------------------------------------------------------------------
+| Id  | Operation              | Name     | Rows  | Bytes |TempSpc| Cost (%CPU)| Time     |
+-------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT       |          | 30161 |   942K|       |  2459   (1)| 00:00:01 |
+|   1 |  HASH GROUP BY         |          | 30161 |   942K|  7344K|  2459   (1)| 00:00:01 |
+|*  2 |   HASH JOIN            |          |   169K|  5296K|  5136K|  1766   (1)| 00:00:01 |
+|   3 |    VIEW                | VW_GBC_5 |   169K|  3144K|       |   704   (1)| 00:00:01 |
+|   4 |     HASH GROUP BY      |          |   169K|  2482K|       |   704   (1)| 00:00:01 |
+|*  5 |      INDEX RANGE SCAN  | INDEX2   |   199K|  2928K|       |   704   (1)| 00:00:01 |
+|*  6 |    INDEX FAST FULL SCAN| INDEX1   |   218K|  2776K|       |   552   (1)| 00:00:01 |
+-------------------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   2 - access("ITEM_1"="O_ORDERKEY")
+   5 - access("LINEITEM"."L_TAX"=0.07)
+   6 - filter("ORDERS"."O_ORDERSTATUS"='F')
+ 
+Note
+-----
+   - this is an adaptive plan
+
+24 rows selected. 
+
+SQL> 
+SQL> -- Drop the indexes
+SQL> drop index index1;
+
+Index dropped.
+
+SQL> drop index index2;
+
+Index dropped.
+
+SQL> 
+SQL> -- Creating indexes for 2nd query
+SQL> create index index1 on customer(c_acctbal, c_custkey, c_name, c_phone);
+
+Index created.
+
+SQL> create index index2 on orders(o_totalprice, o_clerk, o_custkey);
+
+Index created.
+
+SQL> 
+SQL> -- Run the query
+SQL> EXPLAIN PLAN FOR
+  2  SELECT C_NAME, C_PHONE
+  3  FROM CUSTOMER
+  4  WHERE C_ACCTBAL > 7777 AND
+  5        C_CUSTKEY NOT IN ( SELECT O_CUSTKEY
+  6                           FROM ORDERS
+  7                           WHERE O_TOTALPRICE > 100000 AND
+  8  			 O_CLERK = 'Clerk#000000777' );
+
+Explained.
+
+SQL> SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
+
+PLAN_TABLE_OUTPUT
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 1580433807
+ 
+--------------------------------------------------------------------------------
+| Id  | Operation             | Name   | Rows  | Bytes | Cost (%CPU)| Time     |
+--------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT      |        |  8800 |   627K|   968   (1)| 00:00:01 |
+|*  1 |  HASH JOIN RIGHT ANTI |        |  8800 |   627K|   968   (1)| 00:00:01 |
+|*  2 |   INDEX FAST FULL SCAN| INDEX2 |   294 |  7938 |   894   (1)| 00:00:01 |
+|*  3 |   INDEX RANGE SCAN    | INDEX1 |  9093 |   408K|    73   (0)| 00:00:01 |
+--------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   1 - access("C_CUSTKEY"="O_CUSTKEY")
+   2 - filter("O_TOTALPRICE">100000 AND "O_CLERK"='Clerk#000000777' AND 
+              "O_CUSTKEY">=0)
+   3 - access("C_ACCTBAL">7777)
+
+18 rows selected. 
+
+SQL> 
+SQL> -- Drop the indexes
+SQL> drop index index1;
+
+Index dropped.
+
+SQL> drop index index2;
+
+Index dropped.
+
+SQL> 
+SQL> -- Creating indexes for 3rd query
+SQL> create index index1 on orders(o_orderkey, o_orderdate, o_totalprice);
+
+Index created.
+
+SQL> create index index2 on lineitem(l_orderkey, l_partkey);
+
+Index created.
+
+SQL> create index index3 on part(p_name, p_partkey);
+
+Index created.
+
+SQL> 
+SQL> -- Run the query
+SQL> EXPLAIN PLAN FOR
+  2  SELECT O_ORDERKEY, O_ORDERDATE, O_TOTALPRICE
+  3  FROM ORDERS
+  4  WHERE NOT EXISTS ( SELECT 'whatever'
+  5                     FROM LINEITEM
+  6                     WHERE L_ORDERKEY = O_ORDERKEY AND
+  7                           L_PARTKEY IN 
+  8                               ( SELECT P_PARTKEY
+  9                                 FROM PART
+ 10                                 WHERE P_NAME = 'antique medium slate midnight honeydew' ) );
+
+Explained.
+
+SQL> SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
+
+PLAN_TABLE_OUTPUT
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 1029702957
+ 
+-----------------------------------------------------------------------------------
+| Id  | Operation               | Name    | Rows  | Bytes | Cost (%CPU)| Time     |
+-----------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT        |         |   449K|    14M|  2740   (1)| 00:00:01 |
+|*  1 |  HASH JOIN RIGHT ANTI   |         |   449K|    14M|  2740   (1)| 00:00:01 |
+|   2 |   VIEW                  | VW_SQ_1 |    30 |   390 |  2019   (1)| 00:00:01 |
+|*  3 |    HASH JOIN            |         |    30 |  1470 |  2019   (1)| 00:00:01 |
+|*  4 |     INDEX RANGE SCAN    | INDEX3  |     1 |    38 |     3   (0)| 00:00:01 |
+|*  5 |     INDEX FAST FULL SCAN| INDEX2  |  1800K|    18M|  2011   (1)| 00:00:01 |
+|   6 |   INDEX FAST FULL SCAN  | INDEX1  |   450K|  8789K|   720   (1)| 00:00:01 |
+-----------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   1 - access("ITEM_1"="O_ORDERKEY")
+   3 - access("L_PARTKEY"="P_PARTKEY")
+   4 - access("P_NAME"='antique medium slate midnight honeydew')
+   5 - filter("L_PARTKEY">=0)
+
+21 rows selected. 
+
+SQL> 
+SQL> -- Drop the indexes
+SQL> drop index index1;
+
+Index dropped.
+
+SQL> drop index index2;
+
+Index dropped.
+
+SQL> drop index index3;
+
+Index dropped.
+
+SQL> 
+SQL> SPOOL OFF 

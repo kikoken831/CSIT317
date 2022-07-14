@@ -1,0 +1,196 @@
+SQL> SET ECHO ON
+SQL> SET FEEDBACK ON
+SQL> SET LINESIZE 300
+SQL> SET PAGESIZE 300
+SQL> -- Student Name: Lee Yu Xian
+SQL> -- Student Number: 7233164
+SQL> 
+SQL> -- Check the db_cache_size, db_keep_cache_size and db_recycle_cache_size parameters
+SQL> show parameter sga_max_size
+NAME         TYPE        VALUE 
+------------ ----------- ----- 
+sga_max_size big integer 880M  
+SQL> show parameter db_cache_size
+NAME          TYPE        VALUE 
+------------- ----------- ----- 
+db_cache_size big integer 84M   
+SQL> show parameter db_keep_cache_size
+NAME               TYPE        VALUE 
+------------------ ----------- ----- 
+db_keep_cache_size big integer 0M   
+SQL> show parameter db_recycle_cache_size
+NAME                  TYPE        VALUE 
+--------------------- ----------- ----- 
+db_recycle_cache_size big integer 0M   
+SQL> -- Connect as system and run system flush
+SQL> conn system/oracle
+Connected.
+SQL> ALTER SYSTEM FLUSH BUFFER_CACHE;
+
+System altered.
+
+SQL> -- Run showstat on task4.sql
+SQL> @showstat
+SQL> SET ECHO OFF
+Script name> task4.sql
+SQL> 
+SQL> CONNECT system/oracle
+SQL> SELECT	V$SEGMENT_STATISTICS.OWNER,
+  2   	V$SEGMENT_STATISTICS.OBJECT_NAME,
+  3   	V$SEGMENT_STATISTICS.STATISTIC_NAME,
+  4   	V$SEGMENT_STATISTICS.VALUE - NVL(OPSTAT_TABLE.VALUE,0) INCR
+  5  FROM  	V$SEGMENT_STATISTICS LEFT OUTER JOIN OPSTAT_TABLE
+  6  	                    ON V$SEGMENT_STATISTICS.OWNER = OPSTAT_TABLE.OWNER AND
+  7  	                       V$SEGMENT_STATISTICS.OBJECT_NAME = OPSTAT_TABLE.OBJECT_NAME AND
+  8  	                       V$SEGMENT_STATISTICS.STATISTIC_NAME = OPSTAT_TABLE.STATISTIC_NAME
+  9  WHERE 	V$SEGMENT_STATISTICS.OWNER = 'TPCHR' AND
+ 10   	( V$SEGMENT_STATISTICS.VALUE - NVL(OPSTAT_TABLE.VALUE,0) ) <> 0 AND
+ 11  	V$SEGMENT_STATISTICS.OBJECT_NAME <> 'PLAN_TABLE' AND 
+ 12  	V$SEGMENT_STATISTICS.STATISTIC_NAME IN ('logical reads',
+ 13  			 			'physical reads',
+ 14  			   			'physical writes' )
+ 15  ORDER BY V$SEGMENT_STATISTICS.OBJECT_NAME, V$SEGMENT_STATISTICS.STATISTIC_NAME;
+
+Owner                Object name          Statistic name            Statistic value
+-------------------- -------------------- ------------------------- ---------------
+TPCHR                CUSTOMER             logical reads                       8,272
+TPCHR                LINEITEM             logical reads                      64,736
+TPCHR                LINEITEM             physical reads                     64,688
+TPCHR                NATION               logical reads                         208
+TPCHR                NATION_PKEY          logical reads                          16
+TPCHR                ORDERS               logical reads                      74,592
+TPCHR                ORDERS               physical reads                     74,529
+TPCHR                PART                 logical reads                         560
+TPCHR                PARTSUPP_PKEY        logical reads                       7,040
+TPCHR                PART_PEKEY           logical reads                         608
+TPCHR                SUPPLIER             logical reads                         160
+SQL> 
+SQL> SELECT V$SYSSTAT.NAME STAT_NAME,
+  2         V$SYSSTAT.VALUE - SYSSTAT_TABLE.VALUE STATISTIC_VALUE
+  3  FROM SYSSTAT_TABLE JOIN V$SYSSTAT
+  4                     ON SYSSTAT_TABLE.NAME = V$SYSSTAT.NAME
+  5  WHERE SYSSTAT_TABLE.NAME LIKE 'bytes sent via SQL*Net to client' OR
+  6        SYSSTAT_TABLE.NAME LIKE 'bytes received via SQL*Net from client';
+
+Statistic name                           Statistic value
+---------------------------------------- ---------------
+bytes sent via SQL*Net to client                  22,801
+bytes received via SQL*Net from client            18,893
+SQL> 
+SQL> DROP TABLE OPSTAT_TABLE PURGE;
+SQL> DROP TABLE SYSSTAT_TABLE PURGE;
+SQL> 
+SQL> SET FEEDBACK ON
+SQL> SET ECHO ON;
+SQL> 
+SQL> prompt Done.
+Done.
+SQL> -- Alter the sga_max_size parameter
+SQL> ALTER SYSTEM SET sga_max_size=900M scope=spfile;
+
+System altered.
+
+SQL> -- Alter the db_cache_size, db_keep_cache_size and db_delete_cache_size parameters
+SQL> ALTER SYSTEM SET db_cache_size=392M scope=spfile;
+
+System altered.
+
+SQL> ALTER SYSTEM SET db_keep_cache_size=200M scope=spfile;
+
+System altered.
+
+SQL> ALTER SYSTEM SET db_recycle_cache_size=100M scope=spfile;
+
+System altered.
+SQL> 
+SQL> -- Restart system
+SQL> shutdown immediate
+Database closed.
+Database dismounted.
+ORACLE instance shut down.
+SQL> startup
+ORACLE instance started.
+
+Total System Global Area   1455419552 bytes      
+Fixed Size                    8908960 bytes      
+Variable Size               293601280 bytes      
+Database Buffers            725614592 bytes      
+Redo Buffers                  7864320 bytes      
+In-Memory Area              419430400 bytes      
+Database mounted.
+Database opened.
+
+SQL> -- Connect as system and run system flush
+SQL> conn system/oracle
+Connected.
+SQL> ALTER SYSTEM FLUSH BUFFER_CACHE;
+
+System altered.
+
+SQL> -- Run showstat after changing parameters
+SQL> @showstat
+SQL> SET ECHO OFF
+Script name> task4.sql
+SQL> 
+SQL> CONNECT system/oracle
+SQL> SELECT	V$SEGMENT_STATISTICS.OWNER,
+  2   	V$SEGMENT_STATISTICS.OBJECT_NAME,
+  3   	V$SEGMENT_STATISTICS.STATISTIC_NAME,
+  4   	V$SEGMENT_STATISTICS.VALUE - NVL(OPSTAT_TABLE.VALUE,0) INCR
+  5  FROM  	V$SEGMENT_STATISTICS LEFT OUTER JOIN OPSTAT_TABLE
+  6  	                    ON V$SEGMENT_STATISTICS.OWNER = OPSTAT_TABLE.OWNER AND
+  7  	                       V$SEGMENT_STATISTICS.OBJECT_NAME = OPSTAT_TABLE.OBJECT_NAME AND
+  8  	                       V$SEGMENT_STATISTICS.STATISTIC_NAME = OPSTAT_TABLE.STATISTIC_NAME
+  9  WHERE 	V$SEGMENT_STATISTICS.OWNER = 'TPCHR' AND
+ 10   	( V$SEGMENT_STATISTICS.VALUE - NVL(OPSTAT_TABLE.VALUE,0) ) <> 0 AND
+ 11  	V$SEGMENT_STATISTICS.OBJECT_NAME <> 'PLAN_TABLE' AND 
+ 12  	V$SEGMENT_STATISTICS.STATISTIC_NAME IN ('logical reads',
+ 13  			 			'physical reads',
+ 14  			   			'physical writes' )
+ 15  ORDER BY V$SEGMENT_STATISTICS.OBJECT_NAME, V$SEGMENT_STATISTICS.STATISTIC_NAME;
+
+Owner                Object name          Statistic name            Statistic value
+-------------------- -------------------- ------------------------- ---------------
+TPCHR                CUSTOMER             logical reads                       8,320
+TPCHR                CUSTOMER             physical reads                      1,034
+TPCHR                LINEITEM             logical reads                      64,736
+TPCHR                LINEITEM             physical reads                     64,691
+TPCHR                NATION               logical reads                         160
+TPCHR                NATION               physical reads                         32
+TPCHR                NATION_PKEY          physical reads                          1
+TPCHR                ORDERS               logical reads                      74,800
+TPCHR                ORDERS               physical reads                      8,282
+TPCHR                PART                 logical reads                         560
+TPCHR                PART                 physical reads                        142
+TPCHR                PARTSUPP_PKEY        logical reads                       7,008
+TPCHR                PARTSUPP_PKEY        physical reads                        876
+TPCHR                PART_PEKEY           logical reads                         624
+TPCHR                PART_PEKEY           physical reads                         91
+TPCHR                REGION               physical reads                          1
+TPCHR                REGION_PKEY          physical reads                          1
+TPCHR                SUPPLIER             logical reads                         160
+TPCHR                SUPPLIER             physical reads                         79
+TPCHR                SUPPLIER_PKEY        logical reads                          16
+TPCHR                SUPPLIER_PKEY        physical reads                         28
+SQL> 
+SQL> SELECT V$SYSSTAT.NAME STAT_NAME,
+  2         V$SYSSTAT.VALUE - SYSSTAT_TABLE.VALUE STATISTIC_VALUE
+  3  FROM SYSSTAT_TABLE JOIN V$SYSSTAT
+  4                     ON SYSSTAT_TABLE.NAME = V$SYSSTAT.NAME
+  5  WHERE SYSSTAT_TABLE.NAME LIKE 'bytes sent via SQL*Net to client' OR
+  6        SYSSTAT_TABLE.NAME LIKE 'bytes received via SQL*Net from client';
+
+Statistic name                           Statistic value
+---------------------------------------- ---------------
+bytes sent via SQL*Net to client                  23,100
+bytes received via SQL*Net from client            18,893
+SQL> 
+SQL> DROP TABLE OPSTAT_TABLE PURGE;
+SQL> DROP TABLE SYSSTAT_TABLE PURGE;
+SQL> 
+SQL> SET FEEDBACK ON
+SQL> SET ECHO ON;
+SQL> 
+SQL> prompt Done.
+Done.
+SQL> SPOOL OFF

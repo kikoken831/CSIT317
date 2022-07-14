@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>7</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>602</x>
+      <y>525</y>
+      <w>161</w>
+      <h>49</h>
+    </coordinates>
+    <panel_attributes>CONTRACT-EMPLOYEE
+--
+e#      ID
+full-name
+bg=#dddddd
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>777</x>
+      <y>518</y>
+      <w>147</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>PERMANENT-EMPLOYEE
+--
+e#           ID
+full-name
+when-joined
+when-left [0..1]
+bg=#dddddd
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>434</x>
+      <y>532</y>
+      <w>84</w>
+      <h>56</h>
+    </coordinates>
+    <panel_attributes>CONTRACT
+--
+end-date
+start-date  ID
+e#          ID
+bg=#dddddd
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>511</x>
+      <y>532</y>
+      <w>105</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>lt=-
+m1=0..1
+m2=
+&lt; Has-contract</panel_attributes>
+    <additional_attributes>10.0;20.0;130.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>672</x>
+      <y>343</y>
+      <w>168</w>
+      <h>84</h>
+    </coordinates>
+    <panel_attributes>PROJECT
+--
+code    ID1
+title   ID2
+budget
+assign-date[1..*]
+deadline[1..*]
+
+bg=#dddddd
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>805</x>
+      <y>420</y>
+      <w>91</w>
+      <h>112</h>
+    </coordinates>
+    <panel_attributes>lt=-
+m1=1..*
+Is assigned to ^</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>700</x>
+      <y>420</y>
+      <w>91</w>
+      <h>119</h>
+    </coordinates>
+    <panel_attributes>lt=-
+m1=1..*
+Is assigned to ^</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;150.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>476</x>
+      <y>343</y>
+      <w>119</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>PROJECT_DATES
+--
+code    ID1
+deadline
+assign-date
+bg=#dddddd
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>588</x>
+      <y>371</y>
+      <w>98</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>lt=-
+m1=0..1
+m2=
+&lt; Has-dates</panel_attributes>
+    <additional_attributes>10.0;20.0;120.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>469</x>
+      <y>259</y>
+      <w>140</w>
+      <h>21</h>
+    </coordinates>
+    <panel_attributes>Student Name: Lee Yu Xian</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>469</x>
+      <y>280</y>
+      <w>140</w>
+      <h>21</h>
+    </coordinates>
+    <panel_attributes>Student Number: 7233164</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>

@@ -1,0 +1,162 @@
+SQL> SET ECHO ON
+SQL> SET FEEDBACK ON
+SQL> SET LINESIZE 300
+SQL> SET PAGESIZE 300
+SQL> -- Student Name: Lee Yu Xian
+SQL> -- Student Number: 7233164
+SQL> 
+SQL> -- Do the expected query and explain plan
+SQL> explain plan for
+  2  select r_name, count(o_custkey)
+  3  from region, customer, orders, nation
+  4  where o_orderdate >= '01-JAN-97' and o_orderdate <= '31-DEC-97'
+  5  and c_custkey = o_custkey
+  6  and c_nationkey = n_nationkey
+  7  and n_regionkey = r_regionkey
+  8  group by r_name;
+
+Explained.
+
+SQL> -- Displaying the explained plan
+SQL> SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
+
+PLAN_TABLE_OUTPUT
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 2236130745
+ 
+------------------------------------------------------------------------------------------------
+| Id  | Operation                        | Name        | Rows  | Bytes | Cost (%CPU)| Time     |
+------------------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT                 |             |     5 |   235 |  3108   (1)| 00:00:01 |
+|   1 |  HASH GROUP BY                   |             |     5 |   235 |  3108   (1)| 00:00:01 |
+|*  2 |   HASH JOIN                      |             | 68482 |  3143K|  3106   (1)| 00:00:01 |
+|   3 |    VIEW                          | VW_GBF_31   |    25 |   750 |    15   (7)| 00:00:01 |
+|*  4 |     FILTER                       |             |       |       |            |          |
+|   5 |      MERGE JOIN                  |             |    25 |   775 |    15   (7)| 00:00:01 |
+|   6 |       TABLE ACCESS BY INDEX ROWID| REGION      |     5 |   135 |     2   (0)| 00:00:01 |
+|   7 |        INDEX FULL SCAN           | REGION_PKEY |     5 |       |     1   (0)| 00:00:01 |
+|*  8 |       SORT JOIN                  |             |    25 |   100 |    13   (8)| 00:00:01 |
+|*  9 |        TABLE ACCESS FULL         | NATION      |    25 |   100 |    12   (0)| 00:00:01 |
+|* 10 |    HASH JOIN                     |             | 68482 |  1136K|  3091   (1)| 00:00:01 |
+|  11 |     TABLE ACCESS FULL            | CUSTOMER    | 45000 |   263K|   389   (0)| 00:00:01 |
+|* 12 |     TABLE ACCESS FULL            | ORDERS      | 68482 |   735K|  2701   (1)| 00:00:01 |
+------------------------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   2 - access("C_NATIONKEY"="ITEM_1")
+   4 - filter(TO_DATE('31-DEC-97')>=TO_DATE('01-JAN-97'))
+   8 - access("N_REGIONKEY"="R_REGIONKEY")
+       filter("N_REGIONKEY"="R_REGIONKEY")
+   9 - filter("N_REGIONKEY">=0)
+  10 - access("C_CUSTKEY"="O_CUSTKEY")
+  12 - filter("O_ORDERDATE">='01-JAN-97' AND "O_ORDERDATE"<='31-DEC-97' AND 
+              "O_CUSTKEY">=0)
+
+31 rows selected. 
+
+SQL> 
+SQL> -- Doing denormalization by adding a new field
+SQL> alter table orders add o_rname varchar(25);
+
+Table altered.
+
+SQL> 
+SQL> -- Reloading the data (polulate with data)
+SQL> update orders
+  2  set o_rname = (
+  3  select r_name
+  4  from region, nation, customer
+  5  where c_custkey = o_custkey
+  6  and c_nationkey = n_nationkey
+  7  and n_regionkey = r_regionkey);
+
+450000 rows updated.
+
+SQL> 
+SQL> -- Run the new query with new denormalized table and explain the plan
+SQL> explain plan for
+  2  select o_rname, count(o_custkey)
+  3  from orders
+  4  where o_orderdate >= '01-JAN-97' and o_orderdate <= '31-DEC-97'
+  5  group by o_rname;
+
+Explained.
+
+SQL> -- Displaying the explained plan
+SQL> SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
+
+PLAN_TABLE_OUTPUT
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 1449999436
+ 
+------------------------------------------------------------------------------
+| Id  | Operation           | Name   | Rows  | Bytes | Cost (%CPU)| Time     |
+------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT    |        | 68482 |  1404K|  2703   (1)| 00:00:01 |
+|   1 |  HASH GROUP BY      |        | 68482 |  1404K|  2703   (1)| 00:00:01 |
+|*  2 |   FILTER            |        |       |       |            |          |
+|*  3 |    TABLE ACCESS FULL| ORDERS | 68482 |  1404K|  2701   (1)| 00:00:01 |
+------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   2 - filter(TO_DATE('31-DEC-97')>=TO_DATE('01-JAN-97'))
+   3 - filter("O_ORDERDATE">='01-JAN-97' AND "O_ORDERDATE"<='31-DEC-97')
+
+16 rows selected. 
+
+SQL> 
+SQL> -- Creating an index to speed up the query
+SQL> create index a2task3 on orders(o_orderdate, o_rname, o_custkey);
+
+Index created.
+
+SQL> 
+SQL> -- Run the new query with new denormalized table and explain the plan
+SQL> explain plan for
+  2  select o_rname, count(o_custkey)
+  3  from orders
+  4  where o_orderdate >= '01-JAN-97' and o_orderdate <= '31-DEC-97'
+  5  group by o_rname;
+
+Explained.
+
+SQL> -- Displaying the explained plan
+SQL> SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
+
+PLAN_TABLE_OUTPUT
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 1820438388
+ 
+------------------------------------------------------------------------------
+| Id  | Operation          | Name    | Rows  | Bytes | Cost (%CPU)| Time     |
+------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT   |         | 68482 |  1404K|   481   (1)| 00:00:01 |
+|   1 |  HASH GROUP BY     |         | 68482 |  1404K|   481   (1)| 00:00:01 |
+|*  2 |   FILTER           |         |       |       |            |          |
+|*  3 |    INDEX RANGE SCAN| A2TASK3 | 68482 |  1404K|   478   (0)| 00:00:01 |
+------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   2 - filter(TO_DATE('31-DEC-97')>=TO_DATE('01-JAN-97'))
+   3 - access("O_ORDERDATE">='01-JAN-97' AND "O_ORDERDATE"<='31-DEC-97')
+
+16 rows selected. 
+
+SQL> 
+SQL> -- Housekeeping
+SQL> drop index a2task3;
+
+Index dropped.
+
+SQL> alter table orders drop column o_rname;
+
+Table altered.
+
+SQL> 
+SQL> SPOOL OFF

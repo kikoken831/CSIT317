@@ -1,0 +1,53 @@
+SQL> SET ECHO ON
+SQL> SET FEEDBACK ON
+SQL> SET LINESIZE 300
+SQL> SET PAGESIZE 300
+SQL> -- Student Name: Lee Yu Xian
+SQL> -- Student Number: 7233164
+SQL> 
+SQL> -- Explaining plan for the given query processing plan
+SQL> explain plan for
+  2  select *
+  3  from orders join lineitem
+  4  on o_orderkey = l_orderkey
+  5  where o_orderdate < to_date('1996-01-01 00:00:00', 'syyyy-mm-dd hh24:mi:ss')
+  6  and l_partkey not in (select p_partkey from part where p_brand in ('Golden bolts') );
+
+Explained.
+
+SQL> 
+SQL> -- Displaying the explained plan
+SQL> SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
+
+PLAN_TABLE_OUTPUT
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 977579051
+ 
+-----------------------------------------------------------------------------------------
+| Id  | Operation            | Name     | Rows  | Bytes |TempSpc| Cost (%CPU)| Time     |
+-----------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT     |          |  1078K|   257M|       | 28491   (1)| 00:00:02 |
+|*  1 |  HASH JOIN RIGHT ANTI|          |  1078K|   257M|       | 28491   (1)| 00:00:02 |
+|*  2 |   TABLE ACCESS FULL  | PART     |     1 |    16 |       |   401   (1)| 00:00:01 |
+|*  3 |   HASH JOIN          |          |  1078K|   240M|    31M| 28087   (1)| 00:00:02 |
+|*  4 |    TABLE ACCESS FULL | ORDERS   |   273K|    28M|       |  2697   (1)| 00:00:01 |
+|   5 |    TABLE ACCESS FULL | LINEITEM |  1800K|   214M|       | 12158   (1)| 00:00:01 |
+-----------------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   1 - access("LINEITEM"."L_PARTKEY"="P_PARTKEY")
+   2 - filter("P_BRAND"='Golden bolts')
+   3 - access("O_ORDERKEY"="L_ORDERKEY")
+   4 - filter("ORDERS"."O_ORDERDATE"<TO_DATE(' 1996-01-01 00:00:00', 
+              'syyyy-mm-dd hh24:mi:ss'))
+ 
+Note
+-----
+   - this is an adaptive plan
+
+25 rows selected. 
+
+SQL> 
+SQL> SPOOL OFF
