@@ -1,0 +1,231 @@
+SQL> SET ECHO ON
+SQL> SET FEEDBACK ON
+SQL> SET LINESIZE 300
+SQL> SET PAGESIZE 300
+SQL> 
+SQL> 
+SQL> /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+SQL> /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SQL>   Assignment 1
+SQL>   Task 1
+SQL>   Part 1
+SQL>   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+SQL> /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+SQL> 
+SQL> connect system/oracle;
+ERROR:
+ORA-28002: the password will expire within 2 days
+
+Connected.
+SQL> 
+SQL> COLUMN	INSTANCE_NAME		FORMAT A6		HEADING 'Instance|name'
+SQL> COLUMN	HOST_NAME		FORMAT A20		HEADING 'Host|name'
+SQL> COLUMN	STARTUP			FORMAT A12		HEADING 'Startup|time'
+SQL> COLUMN	DATABASE_STATUS		FORMAT A10		HEADING 'Database|status'
+SQL> SELECT 	V$INSTANCE.INSTANCE_NAME, 
+  2  	V$INSTANCE.HOST_NAME,
+  3  	TO_CHAR(V$INSTANCE.STARTUP_TIME,'DD-MON-YYYY-HH:MM:SS') STARTUP,
+  4  	V$INSTANCE.DATABASE_STATUS
+  5  FROM	V$INSTANCE;
+
+Instance Host                 Startup      Database  
+name   name                 time         status    
+------ -------------------- ------------ ----------
+db     localhost.localdomai 14-JUL-2022- ACTIVE    
+       n                    07:07:01               
+
+
+1 row selected. 
+
+SQL> 
+SQL> 
+SQL> /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+SQL> /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SQL>   Assignment 1
+SQL>   Task 1
+SQL>   Part 2
+SQL>   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+SQL> /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+SQL> 
+SQL> connect tpchr/oracle;
+Connected.
+SQL> 
+SQL> ANALYZE TABLE ORDERS COMPUTE STATISTICS;
+
+Table analyzed.
+
+SQL> ANALYZE TABLE REGION COMPUTE STATISTICS;
+
+Table analyzed.
+
+SQL> ANALYZE TABLE NATION COMPUTE STATISTICS;
+
+Table analyzed.
+
+SQL> ANALYZE TABLE PART COMPUTE STATISTICS;
+
+Table analyzed.
+
+SQL> ANALYZE TABLE SUPPLIER COMPUTE STATISTICS;
+
+Table analyzed.
+
+SQL> ANALYZE TABLE PARTSUPP COMPUTE STATISTICS;
+
+Table analyzed.
+
+SQL> ANALYZE TABLE CUSTOMER COMPUTE STATISTICS;
+
+Table analyzed.
+
+SQL> ANALYZE TABLE LINEITEM COMPUTE STATISTICS;
+
+Table analyzed.
+
+SQL> 
+SQL> 
+SQL> 
+SQL> SELECT TABLE_NAME, TABLESPACE_NAME, AVG_ROW_LEN, NUM_FREELIST_BLOCKS, CHAIN_CNT, AVG_SPACE_FREELIST_BLOCKS
+  2  FROM USER_TABLES
+  3  WHERE TABLE_NAME = 'ORDERS';
+
+TABLE_NAME                                                                                                                       TABLESPACE_NAME                AVG_ROW_LEN NUM_FREELIST_BLOCKS  CHAIN_CNT AVG_SPACE_FREELIST_BLOCKS
+-------------------------------------------------------------------------------------------------------------------------------- ------------------------------ ----------- ------------------- ---------- -------------------------
+ORDERS                                                                                                                           TPCHR                                  113                   0          0                         0
+
+1 row selected. 
+
+SQL> 
+SQL> SELECT TABLE_NAME, TABLESPACE_NAME, AVG_ROW_LEN, NUM_FREELIST_BLOCKS, CHAIN_CNT, AVG_SPACE_FREELIST_BLOCKS
+  2  FROM USER_TABLES
+  3  WHERE TABLE_NAME = 'REGION';
+
+TABLE_NAME                                                                                                                       TABLESPACE_NAME                AVG_ROW_LEN NUM_FREELIST_BLOCKS  CHAIN_CNT AVG_SPACE_FREELIST_BLOCKS
+-------------------------------------------------------------------------------------------------------------------------------- ------------------------------ ----------- ------------------- ---------- -------------------------
+REGION                                                                                                                           TPCHR                                  100                   0          0                         0
+
+1 row selected. 
+
+SQL> 
+SQL> SELECT TABLE_NAME, TABLESPACE_NAME, AVG_ROW_LEN, NUM_FREELIST_BLOCKS, CHAIN_CNT, AVG_SPACE_FREELIST_BLOCKS
+  2  FROM USER_TABLES
+  3  WHERE TABLE_NAME = 'NATION';
+
+TABLE_NAME                                                                                                                       TABLESPACE_NAME                AVG_ROW_LEN NUM_FREELIST_BLOCKS  CHAIN_CNT AVG_SPACE_FREELIST_BLOCKS
+-------------------------------------------------------------------------------------------------------------------------------- ------------------------------ ----------- ------------------- ---------- -------------------------
+NATION                                                                                                                           TPCHR                                  105                   0          0                         0
+
+1 row selected. 
+
+SQL> 
+SQL> SELECT TABLE_NAME, TABLESPACE_NAME, AVG_ROW_LEN, NUM_FREELIST_BLOCKS, CHAIN_CNT, AVG_SPACE_FREELIST_BLOCKS
+  2  FROM USER_TABLES
+  3  WHERE TABLE_NAME = 'PART';
+
+TABLE_NAME                                                                                                                       TABLESPACE_NAME                AVG_ROW_LEN NUM_FREELIST_BLOCKS  CHAIN_CNT AVG_SPACE_FREELIST_BLOCKS
+-------------------------------------------------------------------------------------------------------------------------------- ------------------------------ ----------- ------------------- ---------- -------------------------
+PART                                                                                                                             TPCHR                                  123                   0          0                         0
+
+1 row selected. 
+
+SQL> 
+SQL> SELECT TABLE_NAME, TABLESPACE_NAME, AVG_ROW_LEN, NUM_FREELIST_BLOCKS, CHAIN_CNT, AVG_SPACE_FREELIST_BLOCKS
+  2  FROM USER_TABLES
+  3  WHERE TABLE_NAME = 'SUPPLIER';
+
+TABLE_NAME                                                                                                                       TABLESPACE_NAME                AVG_ROW_LEN NUM_FREELIST_BLOCKS  CHAIN_CNT AVG_SPACE_FREELIST_BLOCKS
+-------------------------------------------------------------------------------------------------------------------------------- ------------------------------ ----------- ------------------- ---------- -------------------------
+SUPPLIER                                                                                                                         TPCHR                                  146                   0          0                         0
+
+1 row selected. 
+
+SQL> 
+SQL> SELECT TABLE_NAME, TABLESPACE_NAME, AVG_ROW_LEN, NUM_FREELIST_BLOCKS, CHAIN_CNT, AVG_SPACE_FREELIST_BLOCKS
+  2  FROM USER_TABLES
+  3  WHERE TABLE_NAME = 'PARTSUPP';
+
+TABLE_NAME                                                                                                                       TABLESPACE_NAME                AVG_ROW_LEN NUM_FREELIST_BLOCKS  CHAIN_CNT AVG_SPACE_FREELIST_BLOCKS
+-------------------------------------------------------------------------------------------------------------------------------- ------------------------------ ----------- ------------------- ---------- -------------------------
+PARTSUPP                                                                                                                         TPCHR                                  145                   0          0                         0
+
+1 row selected. 
+
+SQL> 
+SQL> SELECT TABLE_NAME, TABLESPACE_NAME, AVG_ROW_LEN, NUM_FREELIST_BLOCKS, CHAIN_CNT, AVG_SPACE_FREELIST_BLOCKS
+  2  FROM USER_TABLES
+  3  WHERE TABLE_NAME = 'CUSTOMER';
+
+TABLE_NAME                                                                                                                       TABLESPACE_NAME                AVG_ROW_LEN NUM_FREELIST_BLOCKS  CHAIN_CNT AVG_SPACE_FREELIST_BLOCKS
+-------------------------------------------------------------------------------------------------------------------------------- ------------------------------ ----------- ------------------- ---------- -------------------------
+CUSTOMER                                                                                                                         TPCHR                                  161                   0          0                         0
+
+1 row selected. 
+
+SQL> 
+SQL> SELECT TABLE_NAME, TABLESPACE_NAME, AVG_ROW_LEN, NUM_FREELIST_BLOCKS, CHAIN_CNT, AVG_SPACE_FREELIST_BLOCKS
+  2  FROM USER_TABLES
+  3  WHERE TABLE_NAME = 'LINEITEM';
+
+TABLE_NAME                                                                                                                       TABLESPACE_NAME                AVG_ROW_LEN NUM_FREELIST_BLOCKS  CHAIN_CNT AVG_SPACE_FREELIST_BLOCKS
+-------------------------------------------------------------------------------------------------------------------------------- ------------------------------ ----------- ------------------- ---------- -------------------------
+LINEITEM                                                                                                                         TPCHR                                  127                   0          0                         0
+
+1 row selected. 
+
+SQL> 
+SQL> 
+SQL> /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+SQL> /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SQL>   Assignment 1
+SQL>   Task 1
+SQL>   Part 3
+SQL>   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+SQL> /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+SQL> connect sys/oracle as sysdba;
+Connected.
+SQL> 
+SQL> SELECT SYSTIMESTAMP FROM DUAL;
+
+SYSTIMESTAMP
+--------------------------------------
+17-JUL-22 12.58.37.470962000 AM -04:00
+
+1 row selected. 
+
+SQL> 
+SQL> SELECT ds.segment_name as table_name , ds.blocks as total_blocks, ds.bytes as total_bytes,
+  2  ds.extents as total_extents, ut.num_rows as total_rows from dba_segments ds
+  3  left outer join user_tables ut on ut.table_name = ds.segment_name
+  4  where ds.owner = 'TPCHR' and ds.segment_type = 'TABLE';
+
+TABLE_NAME                                                                                                                       TOTAL_BLOCKS TOTAL_BYTES TOTAL_EXTENTS TOTAL_ROWS
+-------------------------------------------------------------------------------------------------------------------------------- ------------ ----------- ------------- ----------
+ORDERS                                                                                                                                   7296    59768832           228           
+LINEITEM                                                                                                                                32576   266862592          1018           
+SUPPLIER                                                                                                                                   96      786432             3           
+PARTSUPP                                                                                                                                 5024    41156608           157           
+CUSTOMER                                                                                                                                 1056     8650752            33           
+PART                                                                                                                                     1088     8912896            34           
+REGION                                                                                                                                     32      262144             1           
+NATION                                                                                                                                     32      262144             1           
+
+8 rows selected. 
+
+SQL> 
+SQL> SELECT ds.segment_name as index_name, ds.blocks as total_blocks, ds.extents as total_extents,
+  2  ds.bytes as total_bytes from dba_segments ds where ds.owner = 'TPCHR' and ds.segment_type = 'INDEX';
+
+INDEX_NAME                                                                                                                       TOTAL_BLOCKS TOTAL_EXTENTS TOTAL_BYTES
+-------------------------------------------------------------------------------------------------------------------------------- ------------ ------------- -----------
+REGION_PKEY                                                                                                                                32             1      262144
+NATION_PKEY                                                                                                                                32             1      262144
+PART_PEKEY                                                                                                                                160             5     1310720
+SUPPLIER_PKEY                                                                                                                              32             1      262144
+PARTSUPP_PKEY                                                                                                                             896            28     7340032
+CUSTOMER_PKEY                                                                                                                             128             4     1048576
+ORDERS_PKEY                                                                                                                               928            29     7602176
+LINEITEM_PKEY                                                                                                                            4256           133    34865152
+
+8 rows selected. 
+
+SQL> SPOOL OFF
