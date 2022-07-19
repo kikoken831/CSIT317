@@ -91,10 +91,10 @@ connect sys/oracle as sysdba;
 
 SELECT SYSTIMESTAMP FROM DUAL;
 
-SELECT ds.segment_name as table_name , ds.blocks as total_blocks, ds.bytes as total_bytes,
-ds.extents as total_extents, ut.num_rows as total_rows from dba_segments ds
-left outer join user_tables ut on ut.table_name = ds.segment_name
-where ds.owner = 'TPCHR' and ds.segment_type = 'TABLE';
+select a.segment_name, b.num_rows, a.blocks, a.extents, a.bytes
+from dba_segments a, dba_tables b
+where a.segment_name = b.table_name
+and b.table_name in ('PART', 'SUPPLIER', 'PARTSUPP', 'LINEITEM', 'ORDERS', 'CUSTOMER', 'NATION', 'REGION');
 
 SELECT ds.segment_name as index_name, ds.blocks as total_blocks, ds.extents as total_extents,
 ds.bytes as total_bytes from dba_segments ds where ds.owner = 'TPCHR' and ds.segment_type = 'INDEX';
