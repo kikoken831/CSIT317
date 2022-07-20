@@ -1,0 +1,74 @@
+SQL> SET ECHO ON
+SQL> SET FEEDBACK ON
+SQL> SET LINESIZE 300
+SQL> SET PAGESIZE 300
+SQL> /*
+SQL>Kendrick Kee
+SQL>7366814
+SQL>Task 4
+SQL>*/
+SQL> EXPLAIN PLAN FOR
+  2
+
+EXPLAIN PLAN FOR
+                *
+ERROR at line 1:
+ORA-00905: missing keyword
+
+SQL> 
+SQL> SELECT C_CUSTKEY FROM CUSTOMER 
+  2  WHERE EXISTS
+  3  (
+  4      SELECT O_CUSTKEY FROM ORDERS 
+  5      WHERE C_CUSTKEY = O_CUSTKEY
+  6  	AND CUSTOMER.C_NAME = 'Golden Bolts' 
+  7          AND ORDERS.O_TOTALPRICE > 100 
+  8  )
+  9  INTERSECT SELECT C_CUSTKEY FROM NATION 
+ 10  JOIN CUSTOMER ON C_NATIONKEY = N_NATIONKEY  
+ 11  WHERE
+ 12      (N_REGIONKEY = 1 OR N_REGIONKEY = 2 OR N_REGIONKEY = 3)
+ 13  	AND C_NATIONKEY >= 0 
+ 14  ;
+
+0 rows selected. 
+
+SQL> 
+SQL> 
+SQL> SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
+
+PLAN_TABLE_OUTPUT
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Plan hash value: 1612789643
+ 
+-----------------------------------------------------------------------------------------
+| Id  | Operation            | Name     | Rows  | Bytes |TempSpc| Cost (%CPU)| Time     |
+-----------------------------------------------------------------------------------------
+|   0 | SELECT STATEMENT     |          |     1 |   263K|       |  3602   (1)| 00:00:01 |
+|   1 |  INTERSECTION        |          |       |       |       |            |          |
+|   2 |   SORT UNIQUE        |          |     1 |    31 |       |  3089   (1)| 00:00:01 |
+|*  3 |    HASH JOIN SEMI    |          |     1 |    31 |       |  3088   (1)| 00:00:01 |
+|*  4 |     TABLE ACCESS FULL| CUSTOMER |     1 |    22 |       |   389   (0)| 00:00:01 |
+|*  5 |     TABLE ACCESS FULL| ORDERS   |   450K|  3955K|       |  2697   (1)| 00:00:01 |
+|   6 |   SORT UNIQUE        |          | 27000 |   263K|   544K|   513   (1)| 00:00:01 |
+|*  7 |    HASH JOIN         |          | 27000 |   263K|       |   402   (1)| 00:00:01 |
+|*  8 |     TABLE ACCESS FULL| NATION   |    15 |    60 |       |    12   (0)| 00:00:01 |
+|*  9 |     TABLE ACCESS FULL| CUSTOMER | 45000 |   263K|       |   390   (1)| 00:00:01 |
+-----------------------------------------------------------------------------------------
+ 
+Predicate Information (identified by operation id):
+---------------------------------------------------
+ 
+   3 - access("C_CUSTKEY"="O_CUSTKEY")
+   4 - filter("CUSTOMER"."C_NAME"='Golden Bolts')
+   5 - filter("ORDERS"."O_TOTALPRICE">100 AND "O_CUSTKEY">=0)
+   7 - access("C_NATIONKEY"="N_NATIONKEY")
+   8 - filter("NATION"."N_REGIONKEY"=1 OR "NATION"."N_REGIONKEY"=2 OR 
+              "NATION"."N_REGIONKEY"=3)
+   9 - filter("C_NATIONKEY">=0)
+
+27 rows selected. 
+
+SQL> 
+SQL> 
+SQL> SPOOL OFF
