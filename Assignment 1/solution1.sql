@@ -94,7 +94,8 @@ SELECT SYSTIMESTAMP FROM DUAL;
 select a.segment_name, b.num_rows, a.blocks, a.extents, a.bytes
 from dba_segments a, dba_tables b
 where a.segment_name = b.table_name
-and b.table_name in ('PART', 'SUPPLIER', 'PARTSUPP', 'LINEITEM', 'ORDERS', 'CUSTOMER', 'NATION', 'REGION');
+and b.table_name in ('PART', 'SUPPLIER', 'PARTSUPP', 'LINEITEM', 'ORDERS', 'CUSTOMER', 'NATION', 'REGION')
+and b.OWNER = 'TPCHR';
 
 SELECT ds.segment_name as index_name, ds.blocks as total_blocks, ds.extents as total_extents,
 ds.bytes as total_bytes from dba_segments ds where ds.owner = 'TPCHR' and ds.segment_type = 'INDEX';

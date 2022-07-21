@@ -14,9 +14,9 @@ SQL> /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SQL> 
 SQL> connect system/oracle;
 ERROR:
-ORA-28002: the password will expire within 0 days
+ORA-01017: invalid username/password; logon denied
 
-Connected.
+Warning: You are no longer connected to ORACLE.
 SQL> 
 SQL> COLUMN	INSTANCE_NAME		FORMAT A6		HEADING 'Instance|name'
 SQL> COLUMN	HOST_NAME		FORMAT A20		HEADING 'Host|name'
@@ -27,16 +27,7 @@ SQL> SELECT 	V$INSTANCE.INSTANCE_NAME,
   3  	TO_CHAR(V$INSTANCE.STARTUP_TIME,'DD-MON-YYYY-HH:MM:SS') STARTUP,
   4  	V$INSTANCE.DATABASE_STATUS
   5  FROM	V$INSTANCE;
-
-Instance Host                 Startup      Database  
-name   name                 time         status    
------- -------------------- ------------ ----------
-db     localhost.localdomai 14-JUL-2022- ACTIVE    
-       n                    07:07:01               
-
-
-1 row selected. 
-
+SP2-0640: Not connected
 SQL> 
 SQL> 
 SQL> /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -188,7 +179,7 @@ SQL> SELECT SYSTIMESTAMP FROM DUAL;
 
 SYSTIMESTAMP
 --------------------------------------
-19-JUL-22 02.16.39.410493000 PM -04:00
+21-JUL-22 07.29.29.887212000 AM -04:00
 
 1 row selected. 
 
@@ -196,11 +187,11 @@ SQL>
 SQL> select a.segment_name, b.num_rows, a.blocks, a.extents, a.bytes
   2  from dba_segments a, dba_tables b
   3  where a.segment_name = b.table_name
-  4  and b.table_name in ('PART', 'SUPPLIER', 'PARTSUPP', 'LINEITEM', 'ORDERS', 'CUSTOMER', 'NATION', 'REGION');
+  4  and b.table_name in ('PART', 'SUPPLIER', 'PARTSUPP', 'LINEITEM', 'ORDERS', 'CUSTOMER', 'NATION', 'REGION')
+  5  and b.OWNER = 'TPCHR';
 
 SEGMENT_NAME                                                                                                                       NUM_ROWS     BLOCKS    EXTENTS      BYTES
 -------------------------------------------------------------------------------------------------------------------------------- ---------- ---------- ---------- ----------
-REGION                                                                                                                                    0         32          1     262144
 REGION                                                                                                                                    5         32          1     262144
 NATION                                                                                                                                   25         32          1     262144
 PART                                                                                                                                  60000       1088         34    8912896
@@ -210,7 +201,7 @@ CUSTOMER                                                                        
 ORDERS                                                                                                                               450000       7296        228   59768832
 LINEITEM                                                                                                                            1800093      32576       1018  266862592
 
-9 rows selected. 
+8 rows selected. 
 
 SQL> 
 SQL> SELECT ds.segment_name as index_name, ds.blocks as total_blocks, ds.extents as total_extents,
